@@ -2,7 +2,9 @@ import logging
 from rest_framework import viewsets
 from django.db import models
 from django.db.models import Count
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import (
+    extend_schema, extend_schema_view
+)
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -20,8 +22,17 @@ client_logger = logging.getLogger('client')
 
 
 @extend_schema(tags=['Клиенты'])
+@extend_schema_view(
+    list=extend_schema(summary='Просмотр списка клиентов'),
+    retrieve=extend_schema(summary='Получение данных одного клиента'),
+    create=extend_schema(summary='Добавление нового клиента'),
+    partial_update=extend_schema(summary='Обновление данных клиента'),
+    destroy=extend_schema(summary='Удаление клиента')
+)
 class ClientViewSet(viewsets.ModelViewSet):
-    http_method_names = ['get', 'post', 'patch', 'delete']  # Убрать гет
+    """API-вью для работы с клиентами."""
+
+    http_method_names = ['get', 'post', 'patch', 'delete']
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
 
@@ -47,8 +58,17 @@ class ClientViewSet(viewsets.ModelViewSet):
 
 
 @extend_schema(tags=['Рассылки'])
+@extend_schema_view(
+    list=extend_schema(summary='Просмотр всех рассылок'),
+    retrieve=extend_schema(summary='Получение данных одной рассылки'),
+    create=extend_schema(summary='Создание новой рассылки',),
+    partial_update=extend_schema(summary='Обновление рассылки'),
+    destroy=extend_schema(summary='Удаление рассылки')
+)
 class MailingViewSet(viewsets.ModelViewSet):
-    http_method_names = ['get', 'post', 'patch', 'delete']  # Убрать гет
+    """API-вью для работы с рассылками."""
+
+    http_method_names = ['get', 'post', 'patch', 'delete']
     queryset = Mailing.objects.all()
     serializer_class = MailingSerializer
 
@@ -76,8 +96,33 @@ class MailingViewSet(viewsets.ModelViewSet):
         mailing_logger.info(f'Удалена рыссылка {mailing_id}')
         return super().perform_destroy(instance)
 
+    def get(self, request, *args, **kwargs):
+        if 'pk' in kwargs:
+            return self.detail_statistics(request, *args, **kwargs)
+        else:
+            return self.statistics(request, *args, **kwargs)
+
+    @extend_schema(
+        tags=['Статистика'],
+        summary='Получить статистику по всем рассылкам',
+        responses={
+            200: {
+                'type': 'array',
+                'items': {
+                    'type': 'object',
+                    'properties': {
+                        'id': {'type': 'string'},
+                        'total_messages': {'type': 'integer'},
+                        'successful_messages': {'type': 'integer'},
+                        'failed_messages': {'type': 'integer'},
+                    }
+                }
+            }
+        },
+    )
     @action(detail=False, methods=['GET'])
     def statistics(self, request):
+        """Возвращает статистику по всем рассылкам."""
         statistics = Mailing.objects.annotate(
             total_messages=Count('messages'),
             successful_messages=Count(
@@ -92,8 +137,16 @@ class MailingViewSet(viewsets.ModelViewSet):
 
         return Response(statistics)
 
+    @extend_schema(
+        tags=['Статистика'],
+        summary='Получить статистику по одной рассылке',
+        responses={
+            200: StatisticSerializer(many=True)
+        },
+    )
     @action(detail=True, methods=['GET'])
     def detail_statistics(self, request, pk=None):
+        """Возвращает статистику по конкретной рассылке."""
         mailing = self.get_object()
         messages = mailing.messages.all()
         serializer = StatisticSerializer(

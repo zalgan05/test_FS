@@ -20,6 +20,7 @@ client_logger = logging.getLogger('client')
 
 @shared_task
 def send_messages_for_mailing(mailing_id):
+    """Запускает отправку сообщений клиентам рассылки."""
     try:
         mailing = Mailing.objects.get(id=mailing_id)
 
@@ -73,11 +74,11 @@ def send_messages_for_mailing(mailing_id):
 
 @shared_task
 def send_message(mailing_id, client_id):
+    """Отправляет сообщение клиенту."""
     try:
         mailing = Mailing.objects.get(id=mailing_id)
         client = Client.objects.get(id=client_id)
         message = Message.objects.create(
-            # send_date=timezone.now(),
             status=0,
             mailing=mailing,
             client=client
@@ -137,7 +138,7 @@ def send_message(mailing_id, client_id):
 
 
 def calculate_send_time(mailing, client):
-    """Возвращает время отправки сообщения с учетом часового пояса клиента"""
+    """Возвращает время отправки сообщения с учетом часового пояса клиента."""
     try:
         client_timezone = pytz.timezone(client.timezone)
         current_datetime = datetime.now(client_timezone)

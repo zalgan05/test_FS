@@ -11,14 +11,22 @@ MAX_LENGTH = 100
 
 
 class Mailing(models.Model):
+    """Модель для хранения информации рассылок."""
+
     name = models.CharField(
         max_length=MAX_LENGTH,
         blank=True,
         null=True,
     )
     text = models.TextField()
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
+    start_date = models.DateTimeField(
+        blank=False,
+        null=False,
+    )
+    end_date = models.DateTimeField(
+        blank=False,
+        null=False,
+    )
     start_time = models.TimeField(
         blank=True,
         null=True,
@@ -56,6 +64,8 @@ class Mailing(models.Model):
 
 
 class Message(models.Model):
+    """Модель для хранения информации о сообщениях рассылок."""
+
     send_date = models.DateTimeField(
         blank=True,
         null=True
@@ -74,9 +84,10 @@ class Message(models.Model):
 
 
 class Client(models.Model):
+    """Модель для хранения информации о клиентах."""
+
     TIMEZONES = tuple(zip(pytz.all_timezones, pytz.all_timezones))
 
-    # phone_number = PhoneNumberField(blank=True, region='RU')
     phone_number = models.CharField(max_length=12, unique=True)
     code_operator = models.IntegerField(
         validators=[

@@ -4,6 +4,7 @@ from .models import Client, Mailing, Message
 
 
 class ClientSerializer(serializers.ModelSerializer):
+    """Сериализатор модели клиента."""
 
     class Meta:
         model = Client
@@ -31,6 +32,7 @@ class ClientSerializer(serializers.ModelSerializer):
 
 
 class MailingSerializer(serializers.ModelSerializer):
+    """Сериализатор модели рассылки."""
 
     class Meta:
         model = Mailing
@@ -116,6 +118,7 @@ class MailingSerializer(serializers.ModelSerializer):
 
 
 class StatisticSerializer(serializers.ModelSerializer):
+    """Сериализатор сообщений для статистики рассылки."""
 
     class Meta:
         model = Message

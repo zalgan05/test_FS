@@ -8,16 +8,12 @@ from .models import Client, Mailing, Message
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     list_display = ('id', 'phone_number', 'code_operator', 'tag', 'timezone')
-    # formfield_overrides = {
-    #     PhoneNumberField: {'widget': PhoneNumberPrefixWidget},
-    # }
 
 
 @admin.register(Mailing)
 class MailingAdmin(admin.ModelAdmin):
     list_display = (
         'id',
-        'name',
         'text',
         'start_date',
         'end_date',
