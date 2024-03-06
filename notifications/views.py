@@ -89,18 +89,16 @@ class MailingViewSet(viewsets.ModelViewSet):
         instance = serializer.instance
         mailing_id = instance.id
         mailing_logger.info(f'Изменена рассылка {mailing_id}')
+        mailing = serializer.save()
+        send_messages_for_mailing.apply_async(
+            args=[mailing.id], eta=mailing.start_date
+        )
         return super().perform_update(serializer)
 
     def perform_destroy(self, instance):
         mailing_id = instance.id
         mailing_logger.info(f'Удалена рыссылка {mailing_id}')
         return super().perform_destroy(instance)
-
-    def get(self, request, *args, **kwargs):
-        if 'pk' in kwargs:
-            return self.detail_statistics(request, *args, **kwargs)
-        else:
-            return self.statistics(request, *args, **kwargs)
 
     @extend_schema(
         tags=['Статистика'],
